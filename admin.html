@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Tonight? — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#060212; --void-2:#0d0826; --neon:#00ff9f; --neon-dim:#00c97e;
+  --gold:#ffb84d; --purple:#8a2be2; --ink:#e9e0ff; --muted:#8a84a3;
+  --glass:rgba(16,10,36,0.6); --border:rgba(0,255,159,0.16); --radius:16px;
+  --danger:#ff6b6b; --warn:#ffb84d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--void);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh;}
+.mono{font-family:'DM Mono',monospace;}
+
+/* AUTH GATE */
+#authGate{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-box{
+  background:var(--glass);border:1px solid var(--border);border-radius:24px;
+  padding:48px 40px;max-width:380px;width:100%;text-align:center;backdrop-filter:blur(20px);
+}
+.auth-box h1{font-size:1.4rem;margin-bottom:6px;}
+.auth-box p{color:var(--muted);font-size:.88rem;margin-bottom:26px;}
+.auth-box input{
+  width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(0,255,159,.25);
+  border-radius:12px;padding:14px 16px;color:white;font-size:.95rem;margin-bottom:14px;
+}
+.auth-box button{
+  width:100%;background:var(--neon);color:#04140d;border:none;padding:14px;
+  border-radius:12px;font-weight:700;cursor:pointer;transition:.25s;
+}
+.auth-box button:hover{box-shadow:0 6px 26px rgba(0,255,159,.4);}
+.auth-error{color:var(--danger);font-size:.82rem;margin-top:10px;min-height:16px;}
+
+/* SHELL */
+#dashboard{display:none;}
+#dashboard.show{display:block;}
+header.top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;border-bottom:1px solid rgba(0,255,159,.1);
+  background:rgba(6,2,18,.85);backdrop-filter:blur(14px);position:sticky;top:0;z-index:100;
+}
+.logo{font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:10px;}
+.logo .dot{width:8px;height:8px;border-radius:50%;background:var(--neon);animation:pulse 1.8s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,255,159,.6);}70%{box-shadow:0 0 0 8px rgba(0,255,159,0);}100%{box-shadow:0 0 0 0 rgba(0,255,159,0);}}
+.top-actions{display:flex;gap:12px;}
+.btn{
+  background:transparent;border:1px solid rgba(233,224,255,.2);color:var(--ink);
+  padding:9px 18px;border-radius:10px;font-size:.85rem;cursor:pointer;transition:.25s;
+}
+.btn:hover{border-color:var(--neon);color:var(--neon);}
+.btn.primary{background:var(--neon);color:#04140d;border:none;font-weight:600;}
+.btn.primary:hover{box-shadow:0 4px 20px rgba(0,255,159,.35);}
+
+main{max-width:1400px;margin:0 auto;padding:30px 28px 80px;}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:30px;}
+.stat-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.stat-card .label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.stat-card .value{font-size:1.9rem;font-weight:600;margin-top:8px;}
+.stat-card .value.neon{color:var(--neon);}
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* CHART + COUNTRY DISTRIBUTION */
+.panel-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:30px;}
+.panel{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);padding:22px;}
+.panel h3{font-size:.95rem;margin-bottom:16px;color:var(--muted);font-weight:500;}
+#signupChart{width:100%;height:160px;}
+.country-list{display:flex;flex-direction:column;gap:10px;max-height:170px;overflow-y:auto;}
+.country-row{display:flex;align-items:center;gap:10px;font-size:.85rem;}
+.country-row .bar-bg{flex:1;background:rgba(255,255,255,.06);border-radius:6px;height:8px;overflow:hidden;}
+.country-row .bar-fill{height:100%;background:linear-gradient(90deg,var(--neon-dim),var(--neon));}
+.country-row .country-name{width:90px;flex-shrink:0;}
+.country-row .country-count{width:34px;text-align:right;color:var(--muted);}
+@media(max-width:1000px){.panel-row{grid-template-columns:1fr;}}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.toolbar input[type=search]{
+  flex:1;min-width:200px;background:rgba(255,255,255,.05);border:1px solid rgba(233,224,255,.15);
+  border-radius:10px;padding:10px 16px;color:white;font-size:.88rem;
+}
+.toolbar select{
+  background:rgba(255,255,255,.05);border:1px solid rgba(233,224,255,.15);color:white;
+  border-radius:10px;padding:10px 14px;font-size:.85rem;
+}
+.toolbar select option{background:var(--void-2);}
+
+/* TABLE */
+.table-wrap{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+table{width:100%;border-collapse:collapse;font-size:.87rem;}
+thead th{
+  text-align:left;padding:14px 16px;color:var(--muted);font-weight:500;font-size:.75rem;
+  text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(233,224,255,.08);
+  cursor:pointer;white-space:nowrap;
+}
+thead th:hover{color:var(--neon);}
+tbody td{padding:13px 16px;border-bottom:1px solid rgba(233,224,255,.05);vertical-align:middle;}
+tbody tr:hover{background:rgba(0,255,159,.03);}
+.badge{
+  display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.4px;
+}
+.badge.waiting{background:rgba(255,184,77,.15);color:var(--gold);}
+.badge.approved{background:rgba(0,255,159,.15);color:var(--neon);}
+.badge.invited{background:rgba(138,43,226,.2);color:#c9a3ff;}
+.badge.rejected{background:rgba(255,107,107,.15);color:var(--danger);}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.icon-btn{
+  background:rgba(255,255,255,.05);border:1px solid rgba(233,224,255,.12);color:var(--ink);
+  padding:6px 10px;border-radius:8px;font-size:.72rem;cursor:pointer;transition:.2s;
+}
+.icon-btn:hover{border-color:var(--neon);color:var(--neon);}
+.icon-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+.pagination{display:flex;justify-content:space-between;align-items:center;padding:16px;font-size:.82rem;color:var(--muted);}
+.pagination .pg-btns{display:flex;gap:8px;}
+
+.empty-state{padding:60px 20px;text-align:center;color:var(--muted);}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;background:var(--void-2);border:1px solid var(--neon);
+  color:var(--ink);padding:14px 22px;border-radius:12px;font-size:.85rem;
+  transform:translateY(120%);transition:transform .35s ease;z-index:999;
+}
+.toast.show{transform:translateY(0);}
+
+@media(max-width:700px){
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  main{padding:20px 14px;}
+  table{font-size:.78rem;}
+  thead th, tbody td{padding:10px;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div id="authGate">
+  <div class="auth-box">
+    <h1>Free Tonight? Admin</h1>
+    <p>Sign in with an authorized admin account.</p>
+    <input type="email" id="authEmail" placeholder="admin@freetonight.app">
+    <input type="password" id="authPassword" placeholder="Password">
+    <button id="authSubmit">Sign In</button>
+    <p class="auth-error" id="authError"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="top">
+    <div class="logo"><span class="dot"></span> Free Tonight? <span class="mono" style="color:var(--muted);font-weight:400;">/ admin</span></div>
+    <div class="top-actions">
+      <button class="btn" id="exportBtn">Export CSV</button>
+      <button class="btn" id="signOutBtn">Sign Out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="label">Total signups</div><div class="value neon" id="statTotal">–</div></div>
+      <div class="stat-card"><div class="label">Today</div><div class="value" id="statToday">–</div></div>
+      <div class="stat-card"><div class="label">This week</div><div class="value" id="statWeek">–</div></div>
+      <div class="stat-card"><div class="label">Countries</div><div class="value" id="statCountries">–</div></div>
+      <div class="stat-card"><div class="label">Approved</div><div class="value" id="statApproved">–</div></div>
+    </div>
+
+    <div class="panel-row">
+      <div class="panel">
+        <h3>Signups — last 14 days</h3>
+        <svg id="signupChart" viewBox="0 0 600 160" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="panel">
+        <h3>Country distribution</h3>
+        <div class="country-list" id="countryList"></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="search" id="searchInput" placeholder="Search name, email, or phone…">
+      <select id="statusFilter">
+        <option value="">All statuses</option>
+        <option value="waiting">Waiting</option>
+        <option value="approved">Approved</option>
+        <option value="invited">Invited</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <select id="countryFilter">
+        <option value="">All countries</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-sort="name">Name</th>
+            <th data-sort="email">Email</th>
+            <th data-sort="phone">Phone</th>
+            <th data-sort="country">Country</th>
+            <th data-sort="createdAt">Date joined</th>
+            <th data-sort="status">Status</th>
+            <th data-sort="device">Device</th>
+            <th data-sort="browser">Browser</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="9" class="empty-state">Loading signups…</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span id="pageInfo">–</span>
+        <div class="pg-btns">
+          <button class="btn" id="prevPage">← Prev</button>
+          <button class="btn" id="nextPage">Next →</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {
+  onAuthStateChanged, signInWithEmailAndPassword, signOut
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import {
+  collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+import { getFirebaseAuth, getFirestoreDb } from "./js/firebase-config.js";
+
+const auth = getFirebaseAuth();
+const db = getFirestoreDb();
+
+const authGate = document.getElementById('authGate');
+const dashboard = document.getElementById('dashboard');
+
+// --- AUTH ---
+document.getElementById('authSubmit').addEventListener('click', async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    errEl.textContent = 'Sign in failed. Check your credentials.';
+  }
+});
+
+document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  // NOTE: Firestore security rules (see firestore.rules) must independently verify
+  // this user's document exists in the `admins` collection before granting read/write
+  // access to `waitlist`. Client-side auth alone is not a security boundary.
+  if (user) {
+    authGate.style.display = 'none';
+    dashboard.classList.add('show');
+    startListening();
+  } else {
+    authGate.style.display = 'flex';
+    dashboard.classList.remove('show');
+  }
+});
+
+// --- STATE ---
+let allEntries = [];
+let filtered = [];
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let sortKey = 'createdAt';
+let sortDir = 'desc';
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function startListening() {
+  const q = query(collection(db, 'waitlist'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap) => {
+    allEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    populateCountryFilter();
+    renderStats();
+    renderChart();
+    applyFiltersAndRender();
+  }, (err) => {
+    document.getElementById('tableBody').innerHTML =
+      `<tr><td colspan="9" class="empty-state">Couldn't load signups: ${err.message}</td></tr>`;
+  });
+}
+
+function toDate(entry) {
+  return entry.createdAt?.toDate ? entry.createdAt.toDate() : (entry.createdAt ? new Date(entry.createdAt) : null);
+}
+
+function renderStats() {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfDay); startOfWeek.setDate(startOfDay.getDate() - startOfDay.getDay());
+
+  const today = allEntries.filter(e => { const d = toDate(e); return d && d >= startOfDay; }).length;
+  const week = allEntries.filter(e => { const d = toDate(e); return d && d >= startOfWeek; }).length;
+  const countries = new Set(allEntries.map(e => e.country).filter(Boolean));
+  const approved = allEntries.filter(e => e.status === 'approved').length;
+
+  document.getElementById('statTotal').textContent = allEntries.length.toLocaleString();
+  document.getElementById('statToday').textContent = today.toLocaleString();
+  document.getElementById('statWeek').textContent = week.toLocaleString();
+  document.getElementById('statCountries').textContent = countries.size;
+  document.getElementById('statApproved').textContent = approved.toLocaleString();
+}
+
+function renderChart() {
+  const days = 14;
+  const counts = new Array(days).fill(0);
+  const now = new Date();
+  const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1));
+
+  allEntries.forEach(e => {
+    const d = toDate(e);
+    if (!d) return;
+    const diff = Math.floor((d - startDay) / 86400000);
+    if (diff >= 0 && diff < days) counts[diff]++;
+  });
+
+  const max = Math.max(1, ...counts);
+  const w = 600, h = 160, pad = 10;
+  const stepX = (w - pad * 2) / (days - 1);
+  const points = counts.map((c, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - (c / max) * (h - pad * 2);
+    return `${x},${y}`;
+  }).join(' ');
+
+  const svg = document.getElementById('signupChart');
+  svg.innerHTML = `
+    <polyline points="${points}" fill="none" stroke="#00ff9f" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <polygon points="${pad},${h-pad} ${points} ${w-pad},${h-pad}" fill="rgba(0,255,159,0.08)"/>
+  `;
+}
+
+function populateCountryFilter() {
+  const sel = document.getElementById('countryFilter');
+  const existing = new Set(Array.from(sel.options).map(o => o.value));
+  const countries = new Set(allEntries.map(e => e.country).filter(Boolean));
+  countries.forEach(c => {
+    if (!existing.has(c)) {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    }
+  });
+
+  // country distribution panel
+  const counts = {};
+  allEntries.forEach(e => { if (e.country) counts[e.country] = (counts[e.country] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const maxCount = sorted.length ? sorted[0][1] : 1;
+  const list = document.getElementById('countryList');
+  list.innerHTML = sorted.map(([country, count]) => `
+    <div class="country-row">
+      <span class="country-name">${country}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${(count / maxCount) * 100}%"></div></div>
+      <span class="country-count">${count}</span>
+    </div>
+  `).join('') || '<p style="color:var(--muted);font-size:.85rem;">No data yet.</p>';
+}
+
+function applyFiltersAndRender() {
+  const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+  const statusVal = document.getElementById('statusFilter').value;
+  const countryVal = document.getElementById('countryFilter').value;
+
+  filtered = allEntries.filter(e => {
+    const matchesSearch = !searchTerm ||
+      (e.name || '').toLowerCase().includes(searchTerm) ||
+      (e.email || '').toLowerCase().includes(searchTerm) ||
+      (e.phone || '').toLowerCase().includes(searchTerm);
+    const matchesStatus = !statusVal || e.status === statusVal;
+    const matchesCountry = !countryVal || e.country === countryVal;
+    return matchesSearch && matchesStatus && matchesCountry;
+  });
+
+  filtered.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (sortKey === 'createdAt') { av = toDate(a)?.getTime() || 0; bv = toDate(b)?.getTime() || 0; }
+    else { av = (av || '').toString().toLowerCase(); bv = (bv || '').toString().toLowerCase(); }
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No signups match these filters.</td></tr>';
+    document.getElementById('pageInfo').textContent = '0 results';
+    return;
+  }
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  currentPage = Math.min(currentPage, totalPages);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+  tbody.innerHTML = pageItems.map(e => {
+    const d = toDate(e);
+    const dateStr = d ? d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '–';
+    const status = e.status || 'waiting';
+    return `
+      <tr data-id="${e.id}">
+        <td>${escapeHtml(e.name || '–')}</td>
+        <td>${escapeHtml(e.email || '–')}</td>
+        <td>${escapeHtml(e.phone || '–')}</td>
+        <td>${escapeHtml(e.country || '–')}</td>
+        <td>${dateStr}</td>
+        <td><span class="badge ${status}">${status}</span></td>
+        <td>${escapeHtml(e.device || '–')}</td>
+        <td>${escapeHtml(e.browser || '–')}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" data-action="approve">Approve</button>
+            <button class="icon-btn" data-action="reject">Reject</button>
+            <button class="icon-btn" data-action="copy-email">Copy email</button>
+            <button class="icon-btn" data-action="copy-phone">Copy phone</button>
+            <button class="icon-btn danger" data-action="delete">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('pageInfo').textContent =
+    `${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}`;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// row actions
+document.getElementById('tableBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const row = e.target.closest('tr');
+  const id = row.dataset.id;
+  const entry = allEntries.find(x => x.id === id);
+  const action = btn.dataset.action;
+
+  try {
+    if (action === 'approve') {
+      await updateDoc(doc(db, 'waitlist', id), { status: 'approved' });
+      showToast('Marked as approved');
+    } else if (action === 'reject') {
+      await updateDoc(doc(db, 'waitlist', id), { status: 'rejected' });
+      showToast('Marked as rejected');
+    } else if (action === 'delete') {
+      if (confirm(`Delete ${entry?.name || 'this entry'} from the waitlist? This can't be undone.`)) {
+        await deleteDoc(doc(db, 'waitlist', id));
+        showToast('Entry deleted');
+      }
+    } else if (action === 'copy-email') {
+      await navigator.clipboard.writeText(entry?.email || '');
+      showToast('Email copied');
+    } else if (action === 'copy-phone') {
+      await navigator.clipboard.writeText(entry?.phone || '');
+      showToast('Phone copied');
+    }
+  } catch (err) {
+    showToast('Action failed: ' + err.message);
+  }
+});
+
+// sorting
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    else { sortKey = key; sortDir = 'asc'; }
+    applyFiltersAndRender();
+  });
+});
+
+// filters
+document.getElementById('searchInput').addEventListener('input', applyFiltersAndRender);
+document.getElementById('statusFilter').addEventListener('change', applyFiltersAndRender);
+document.getElementById('countryFilter').addEventListener('change', applyFiltersAndRender);
+
+// pagination
+document.getElementById('prevPage').addEventListener('click', () => { currentPage--; renderTable(); });
+document.getElementById('nextPage').addEventListener('click', () => { currentPage++; renderTable(); });
+
+// CSV export
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const headers = ['Name', 'Email', 'Phone', 'Country', 'Date Joined', 'Status', 'Device', 'Browser', 'Referrer', 'Timezone'];
+  const rows = filtered.map(e => [
+    e.name, e.email, e.phone, e.country,
+    toDate(e)?.toISOString() || '',
+    e.status || 'waiting', e.device, e.browser, e.referrer, e.timezone
+  ]);
+  const csv = [headers, ...rows]
+    .map(row => row.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `freetonight-waitlist-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+});
+</script>
+</body>
+</html>

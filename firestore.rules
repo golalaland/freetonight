@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // --- waitlist ---
+    // Public (unauthenticated) visitors may only CREATE a signup.
+    // They can never read, update, or delete waitlist documents — this prevents
+    // scraping of emails/phones and prevents anyone from editing another
+    // person's status client-side.
+    match /waitlist/{docId} {
+      allow create: if isValidWaitlistEntry(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    function isValidWaitlistEntry(data) {
+      return data.keys().hasAll(['name', 'email', 'phone', 'country', 'status']) &&
+        data.name is string && data.name.size() > 0 && data.name.size() < 120 &&
+        data.email is string && data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') &&
+        data.phone is string && data.phone.size() > 0 && data.phone.size() < 25 &&
+        data.country is string &&
+        data.status == 'waiting'; // clients may only ever create with status "waiting"
+    }
+
+    // --- admins ---
+    // The admins collection itself is only manageable from the Firebase console
+    // or a trusted server context (e.g. a Cloud Function run by a project owner).
+    // No client, including signed-in admins, can write to it directly.
+    match /admins/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // --- settings ---
+    // App configuration readable by admins only; written only via trusted backend.
+    match /settings/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // --- analytics ---
+    // Aggregated analytics documents, written only by Cloud Functions (Admin SDK
+    // bypasses these rules entirely), readable by admins for the dashboard.
+    match /analytics/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
