@@ -79,9 +79,11 @@ img{max-width:100%;display:block;}
 
 section{position:relative;z-index:2;}
 
-/* reveal on scroll */
-.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease, transform .8s ease;}
-.reveal.in{opacity:1;transform:translateY(0);}
+/* reveal on scroll — visible by default so content never depends on JS to be seen;
+   only animates if JS successfully arms it */
+.reveal{opacity:1;transform:none;transition:opacity .8s ease, transform .8s ease;}
+.reveal.js-armed{opacity:0;transform:translateY(28px);}
+.reveal.js-armed.in{opacity:1;transform:translateY(0);}
 
 /* NAV */
 nav{
@@ -206,6 +208,15 @@ nav{
 .fcard:nth-child(5){right:2%;top:30px;animation-delay:1.4s;}
 @keyframes floatCard{from{transform:translateY(0) rotate(-4deg);}to{transform:translateY(-24px) rotate(4deg);}}
 @media(max-width:760px){.float-cards{display:none;}}
+
+.scroll-cue{
+  margin-top:56px;background:none;border:1.5px solid rgba(233,224,255,0.3);
+  width:30px;height:46px;border-radius:20px;cursor:pointer;position:relative;
+  display:flex;justify-content:center;padding-top:8px;transition:border-color .3s ease;
+}
+.scroll-cue:hover{border-color:var(--neon);}
+.scroll-cue span{width:4px;height:8px;border-radius:2px;background:var(--neon);animation:scrollCue 1.6s ease-in-out infinite;}
+@keyframes scrollCue{0%{opacity:1;transform:translateY(0);}70%{opacity:0;transform:translateY(14px);}100%{opacity:0;transform:translateY(0);}}
 
 /* SECTION SHARED */
 .section-inner{max-width:1140px;margin:0 auto;padding:130px 24px;}
@@ -381,7 +392,7 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
 
 <!-- HERO -->
 <section id="hero">
-  <p class="hero-eyebrow"><span class="pulse-dot"></span> Lagos · Accra · Cape Town · Nairobi</p>
+  <p class="hero-eyebrow"><span class="pulse-dot"></span> Live worldwide · every city, every night</p>
   <div class="hero-title-wrap">
     <h1 class="hero-title">FREE</h1>
     <h1 class="hero-question">TONIGHT?</h1>
@@ -399,18 +410,22 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
   </div>
 
   <div class="stats-row reveal" id="statsRow">
-    <div class="stat"><div class="stat-num" data-count="10000">0</div><div class="stat-label">People waiting</div></div>
-    <div class="stat"><div class="stat-num" data-count="38">0</div><div class="stat-label">Cities</div></div>
-    <div class="stat"><div class="stat-num" data-count="0" data-text="Soon">0</div><div class="stat-label">Launching</div></div>
+    <div class="stat"><div class="stat-num" data-count="10000">10,000+</div><div class="stat-label">People waiting</div></div>
+    <div class="stat"><div class="stat-num" data-count="40">40+</div><div class="stat-label">Countries</div></div>
+    <div class="stat"><div class="stat-num" data-count="0" data-text="Soon">Soon</div><div class="stat-label">Launching</div></div>
   </div>
 
   <div class="float-cards">
     <div class="fcard"><div class="avatar">👩🏾</div><div class="handle">@adaeze</div><div class="loc">Lagos</div></div>
-    <div class="fcard"><div class="avatar">👨🏿</div><div class="handle">@kobby</div><div class="loc">Accra</div></div>
-    <div class="fcard"><div class="avatar">👩🏽</div><div class="handle">@zara.v</div><div class="loc">Cape Town</div></div>
-    <div class="fcard"><div class="avatar">👨🏾</div><div class="handle">@teejay</div><div class="loc">Abuja</div></div>
-    <div class="fcard"><div class="avatar">👩🏿</div><div class="handle">@nneka</div><div class="loc">Lagos</div></div>
+    <div class="fcard"><div class="avatar">👨🏻</div><div class="handle">@marco.l</div><div class="loc">Milan</div></div>
+    <div class="fcard"><div class="avatar">👩🏻</div><div class="handle">@sienna</div><div class="loc">New York</div></div>
+    <div class="fcard"><div class="avatar">👨🏽</div><div class="handle">@rahul</div><div class="loc">Mumbai</div></div>
+    <div class="fcard"><div class="avatar">👩🏻</div><div class="handle">@yuki.k</div><div class="loc">Tokyo</div></div>
   </div>
+
+  <button class="scroll-cue" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})" aria-label="Scroll to learn more">
+    <span></span>
+  </button>
 </section>
 
 <!-- HOW IT WORKS -->
@@ -476,16 +491,18 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
   </div>
   <div class="ticker-wrap">
     <div class="ticker" id="tickerTrack">
-      <span><b>Lagos</b> — 214 free tonight</span>
-      <span><b>Accra</b> — 96 free tonight</span>
-      <span><b>Cape Town</b> — 158 free tonight</span>
-      <span><b>Abuja</b> — 77 free tonight</span>
-      <span><b>Nairobi</b> — 133 free tonight</span>
-      <span><b>Lagos</b> — 214 free tonight</span>
-      <span><b>Accra</b> — 96 free tonight</span>
-      <span><b>Cape Town</b> — 158 free tonight</span>
-      <span><b>Abuja</b> — 77 free tonight</span>
-      <span><b>Nairobi</b> — 133 free tonight</span>
+      <span><b>New York</b> — 214 free tonight</span>
+      <span><b>London</b> — 189 free tonight</span>
+      <span><b>Lagos</b> — 176 free tonight</span>
+      <span><b>Tokyo</b> — 133 free tonight</span>
+      <span><b>São Paulo</b> — 158 free tonight</span>
+      <span><b>Dubai</b> — 96 free tonight</span>
+      <span><b>New York</b> — 214 free tonight</span>
+      <span><b>London</b> — 189 free tonight</span>
+      <span><b>Lagos</b> — 176 free tonight</span>
+      <span><b>Tokyo</b> — 133 free tonight</span>
+      <span><b>São Paulo</b> — 158 free tonight</span>
+      <span><b>Dubai</b> — 96 free tonight</span>
     </div>
   </div>
 </section>
@@ -517,7 +534,7 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
     <h2 class="section-title reveal" style="margin:0 auto;">Nightlife, reimagined by the people already living it.</h2>
     <div class="quote-block reveal">
       <p class="quote-text">"I stopped making plans three weeks in advance. Now I just check who's free and go."</p>
-      <p class="quote-attr">— Early member, Lagos</p>
+      <p class="quote-attr">— Early member</p>
     </div>
   </div>
 </section>
@@ -538,7 +555,7 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
       </div>
       <div class="faq-item reveal">
         <div class="faq-q">Which cities are live first? <span class="faq-icon">+</span></div>
-        <div class="faq-a">Lagos, Accra, and Cape Town launch first, with more cities added as demand grows.</div>
+        <div class="faq-a">We're launching globally, opening city by city as demand grows. Join the waitlist and we'll notify you the moment your city goes live.</div>
       </div>
       <div class="faq-item reveal">
         <div class="faq-q">Is my information private? <span class="faq-icon">+</span></div>
@@ -593,12 +610,20 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
               <label for="country">Country</label>
               <select id="country" name="country">
                 <option value="">Select country</option>
-                <option value="NG">Nigeria</option>
-                <option value="GH">Ghana</option>
-                <option value="ZA">South Africa</option>
-                <option value="KE">Kenya</option>
                 <option value="US">United States</option>
                 <option value="GB">United Kingdom</option>
+                <option value="NG">Nigeria</option>
+                <option value="ZA">South Africa</option>
+                <option value="GH">Ghana</option>
+                <option value="KE">Kenya</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="IN">India</option>
+                <option value="BR">Brazil</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="JP">Japan</option>
+                <option value="AU">Australia</option>
+                <option value="CA">Canada</option>
                 <option value="Other">Other</option>
               </select>
               <span class="field-error-msg"></span>
@@ -629,7 +654,7 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
 
 <footer>
   <div class="footer-logo">Free Tonight?</div>
-  <p>Exclusively on <strong>CUBE</strong> · freetonight.app · Lagos, Nigeria</p>
+  <p>Exclusively on <strong>CUBE</strong> · freetonight.app · A global platform</p>
   <div class="footer-links">
     <a href="#" onclick="return false;">Privacy</a>
     <a href="#" onclick="return false;">Terms</a>
@@ -637,8 +662,13 @@ footer{padding:70px 24px 40px;text-align:center;color:var(--muted);font-size:.9r
   </div>
 </footer>
 
-<script type="module">
-import { submitToWaitlist } from './js/waitlist.js';
+<script>
+/* This is a regular (non-module) script on purpose: all page interactivity —
+   reveal animations, the FAQ, and the waitlist form itself — must work even if
+   Firebase can't be reached or ES module imports are blocked (e.g. the page is
+   opened directly from disk instead of served over http/https). Only the actual
+   Firestore write is loaded lazily via dynamic import() inside the submit handler,
+   and it's wrapped in a try/catch so the form always stays usable either way. */
 
 /* cursor ambient glow */
 const glow = document.getElementById('cursorGlow');
@@ -647,11 +677,15 @@ window.addEventListener('pointermove', (e) => {
   glow.style.top = e.clientY + 'px';
 });
 
-/* scroll reveal */
+/* scroll reveal — elements are visible by default in CSS; only "arm" (hide, then
+   animate in) once we know this script is actually running */
 const io = new IntersectionObserver((entries) => {
   entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
 }, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+document.querySelectorAll('.reveal').forEach(el => {
+  el.classList.add('js-armed');
+  io.observe(el);
+});
 
 /* animated counters */
 function animateCount(el, target, isText) {
@@ -738,6 +772,7 @@ form.addEventListener('submit', async (e) => {
   submitBtn.classList.add('loading');
 
   try {
+    const { submitToWaitlist } = await import('./js/waitlist.js');
     const result = await submitToWaitlist(data);
     if (result.duplicate) {
       formMsg.textContent = result.field === 'phone'
